@@ -15,6 +15,7 @@ const CustomKeyboardAvoidingView: FC<Props> = ({ children }) => {
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       style={styles.container}
+      keyboardVerticalOffset={40}
     >
       <ScrollView>{children}</ScrollView>
     </KeyboardAvoidingView>

@@ -11,6 +11,7 @@ const categories = [
   { name: "Sports & Outdoors", icon: <SvgIcon.SportsAndOutdoor /> },
   { name: "Tools & Home Improvement", icon: <SvgIcon.Tools /> },
   { name: "Toys & Games", icon: <SvgIcon.ToysAndGames /> },
+  { name: "Others", icon: <SvgIcon.ShoppingCart /> },
 ];
 
 export default categories;

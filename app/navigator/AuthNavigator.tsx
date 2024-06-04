@@ -1,9 +1,9 @@
 import { StyleSheet } from "react-native";
 import { FC } from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import SignIn from "@views/SignIn";
-import SignUp from "@views/SignUp";
-import ForgotPassword from "@views/ForgotPassword";
+import SignIn from "@views/auth/SignIn";
+import SignUp from "@views/auth/SignUp";
+import ForgotPassword from "@views/auth/ForgotPassword";
 
 interface Props {}
 

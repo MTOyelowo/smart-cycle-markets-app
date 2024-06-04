@@ -14,7 +14,6 @@ import { showMessage } from "react-native-flash-message";
 
 export const runAxiosAsync = async<T>(promise: Promise<AxiosResponse<T>>): Promise<T | null> => {
     try {
-
         const response = await promise;
         return response.data
 

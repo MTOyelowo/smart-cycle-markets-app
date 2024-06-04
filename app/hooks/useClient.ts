@@ -1,11 +1,10 @@
 import { baseURL } from "app/api/client"
 import axios from "axios";
-import useAuth from "./useAuth";
 import createAuthRefreshInterceptor from "axios-auth-refresh";
 import asyncStorage, { Keys } from "@utils/asyncStorage";
 import { runAxiosAsync } from "app/api/runAxiosAsync";
-import { useDispatch } from "react-redux";
-import { updateAuthState } from "app/store/auth";
+import { useDispatch, useSelector } from "react-redux";
+import { getAuthState, updateAuthState } from "app/store/auth";
 
 const authClient = axios.create({ baseURL })
 
@@ -17,7 +16,7 @@ type Response = {
 }
 
 const useClient = () => {
-    const { authState } = useAuth();
+    const authState = useSelector(getAuthState);
     const dispatch = useDispatch();
 
     const token = authState.profile?.accessToken;
@@ -39,7 +38,13 @@ const useClient = () => {
         const options = { method: "POST", data: { refreshToken }, url: `${baseURL}/auth/refresh-token` }
         const res = await runAxiosAsync<Response>(axios(options));
         if (res?.tokens) {
-            failedRequest.response.config.headers.Authorization = "Bearer " + res.tokens.access
+            failedRequest.response.config.headers.Authorization = "Bearer " + res.tokens.access;
+
+            // this if block is to handle signout if token is expired
+            if (failedRequest.response.config.url === "/auth/sign-out") {
+                failedRequest.response.config.data = { refreshToken: res.tokens.refresh }
+            }
+
             await asyncStorage.save(Keys.AUTH_TOKEN, res.tokens.access)
             await asyncStorage.save(Keys.REFRESH_TOKEN, res.tokens.refresh)
             dispatch(updateAuthState({ profile: { ...authState.profile!, accessToken: res.tokens.access }, pending: false }))

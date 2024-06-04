@@ -1,4 +1,4 @@
-import Svg, { G, Path, Defs, ClipPath, Circle } from "react-native-svg";
+import Svg, { G, Path, Defs, ClipPath, Circle, Rect } from "react-native-svg";
 
 const Automobile = () => {
   return (
@@ -179,6 +179,34 @@ const SportsAndOutdoor = () => {
   );
 };
 
+const ShoppingCart = () => {
+  return (
+    <Svg width={48} height={48} fill="none">
+      <G clipPath="url(#clip0_15_35)">
+        <Rect width={48} height={48} fill="white" />
+        <Path
+          d="M10.667 12H39.734C40.937 12 41.868 13.054 41.719 14.248L40.219 26.248C40.094 27.249 39.243 28 38.234 28H33.111H18.889H15.999"
+          stroke="#000"
+          strokeLinejoin="round"
+        />
+        <Path
+          d="M4 8H8.467C9.371 8 10.163 8.607 10.398 9.48L16.601 34.52C16.837 35.393 17.629 36 18.533 36H38"
+          stroke="#000"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <Circle cx={20} cy={40} r={2} stroke="#000" strokeLinejoin="round" />
+        <Circle cx={35} cy={40} r={2} stroke="#000" strokeLinejoin="round" />
+      </G>
+      <Defs>
+        <ClipPath id="clip0_15_35">
+          <Rect width={48} height={48} fill="white" />
+        </ClipPath>
+      </Defs>
+    </Svg>
+  );
+};
+
 const SvgIcon = {
   Automobile,
   Beauty,
@@ -190,6 +218,7 @@ const SvgIcon = {
   Fitness,
   SportsAndOutdoor,
   Tools,
+  ShoppingCart,
 };
 
 export default SvgIcon;
