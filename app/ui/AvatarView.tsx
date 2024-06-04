@@ -1,21 +1,23 @@
 import { FC } from "react";
-import { Image, StyleSheet, Text, View } from "react-native";
+import { Image, Pressable, StyleSheet, Text, View } from "react-native";
 import { FontAwesome } from "@expo/vector-icons";
 import colors from "@utils/colors";
 
 interface Props {
   uri?: string;
   size?: number;
+  onPress?(): void;
 }
 
 const iconContainerFactor = 0.7;
 const iconSizeFactor = 0.8;
 
-const AvatarView: FC<Props> = ({ size = 50, uri }) => {
+const AvatarView: FC<Props> = ({ size = 50, uri, onPress }) => {
   const iconContainerSize = size * iconContainerFactor;
   const iconSize = size * iconSizeFactor;
   return (
-    <View
+    <Pressable
+      onPress={onPress}
       style={[
         styles.container,
         { width: size, aspectRatio: 1, borderRadius: size / 2 },
@@ -38,7 +40,7 @@ const AvatarView: FC<Props> = ({ size = 50, uri }) => {
           <FontAwesome name="user" size={iconSize} color={colors.white} />
         </View>
       )}
-    </View>
+    </Pressable>
   );
 };
 

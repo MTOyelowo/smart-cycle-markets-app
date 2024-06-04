@@ -22,7 +22,7 @@ const myTheme = {
   },
 };
 
-type ProfileRes = {
+export type ProfileRes = {
   profile: {
     id: string;
     name: string;
