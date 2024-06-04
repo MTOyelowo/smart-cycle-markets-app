@@ -22,16 +22,27 @@ const myTheme = {
   },
 };
 
+type ProfileRes = {
+  profile: {
+    id: string;
+    name: string;
+    email: string;
+    verified: boolean;
+    avatar?: string;
+  };
+};
+
 const Navigator: FC<Props> = () => {
   const dispatch = useDispatch();
 
   const { loggedIn, authState } = useAuth();
   const { authClient } = useClient();
+
   const fetchAuthState = async () => {
     const token = await asyncStorage.get(Keys.AUTH_TOKEN);
     if (token) {
       dispatch(updateAuthState({ pending: true, profile: null }));
-      const res = await runAxiosAsync<{ profile: Profile }>(
+      const res = await runAxiosAsync<ProfileRes>(
         authClient.get("/auth/profile", {
           headers: {
             Authorization: "Bearer " + token,
@@ -40,7 +51,19 @@ const Navigator: FC<Props> = () => {
       );
 
       if (res) {
-        dispatch(updateAuthState({ pending: false, profile: res.profile }));
+        dispatch(
+          updateAuthState({
+            pending: false,
+            profile: {
+              email: res.profile.email,
+              name: res.profile.name,
+              id: res.profile.id,
+              verified: res.profile.verified,
+              avatar: res.profile.avatar,
+              accessToken: token,
+            },
+          })
+        );
       } else {
         dispatch(updateAuthState({ pending: false, profile: null }));
       }

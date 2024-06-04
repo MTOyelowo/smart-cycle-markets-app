@@ -6,7 +6,7 @@ import {
 import AppNavigator from "./AppNavigator";
 import ProfileNavigator from "./ProfileNavigator";
 import { AntDesign } from "@expo/vector-icons";
-import NewListing from "@views/NewListing";
+import NewListing from "@views/products/NewListing";
 
 interface Props {}
 
@@ -23,7 +23,9 @@ const getOptions = (iconName: string): BottomTabNavigationOptions => {
 
 const TabNavigator: FC<Props> = (props) => {
   return (
-    <Tab.Navigator screenOptions={{ headerShown: false }}>
+    <Tab.Navigator
+      screenOptions={{ headerShown: false, tabBarHideOnKeyboard: true }}
+    >
       <Tab.Screen
         name="HomeNavigator"
         component={AppNavigator}

@@ -4,6 +4,7 @@ import client from "app/api/client";
 import { runAxiosAsync } from "app/api/runAxiosAsync";
 import { getAuthState, updateAuthState } from "app/store/auth";
 import { useDispatch, useSelector } from "react-redux";
+import useClient from "./useClient";
 
 export interface SignInResponse {
     profile: {
@@ -25,6 +26,7 @@ type UserInfo = {
 }
 
 const useAuth = () => {
+    const { authClient } = useClient();
     const dispatch = useDispatch();
     const authState = useSelector(getAuthState);
     const loggedIn = authState.profile ? true : false;
@@ -39,13 +41,26 @@ const useAuth = () => {
             await asyncStorage.save(Keys.AUTH_TOKEN, res.tokens.access)
             await asyncStorage.save(Keys.REFRESH_TOKEN, res.tokens.refresh)
             dispatch(updateAuthState({ profile: { ...res.profile, accessToken: res.tokens.access }, pending: false }));
-        } else {
 
+
+        } else {
             dispatch(updateAuthState({ profile: null, pending: false }));
         }
     }
 
-    return { signIn, authState, loggedIn }
+    const signOut = async () => {
+        const token = await asyncStorage.get(Keys.REFRESH_TOKEN)
+        if (token) {
+            dispatch(updateAuthState({ profile: authState.profile, pending: true }));
+            const res = await runAxiosAsync(authClient.post("/auth/sign-out", { refreshToken: token }));
+
+            await asyncStorage.remove(Keys.REFRESH_TOKEN)
+            await asyncStorage.remove(Keys.AUTH_TOKEN)
+            dispatch(updateAuthState({ profile: null, pending: false }));
+        }
+    }
+
+    return { signIn, signOut, authState, loggedIn }
 
 };
 
