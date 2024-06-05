@@ -1,4 +1,4 @@
-import { FC, useState } from "react";
+import { FC, useEffect, useState } from "react";
 
 import AppHeader from "@components/AppHeader";
 import ProductDetails from "@components/ProductDetails";
@@ -17,19 +17,20 @@ import { runAxiosAsync } from "app/api/runAxiosAsync";
 import { showMessage } from "react-native-flash-message";
 import LoadingSpinner from "@ui/LoadingSpinner";
 import { useDispatch } from "react-redux";
-import { deleteItem } from "app/store/listings";
+import { Product, deleteItem } from "app/store/listings";
 
 type Props = NativeStackScreenProps<ProfileStackParamList, "SingleProduct">;
 
 const SingleProduct: FC<Props> = ({ route, navigation }) => {
   const [showOptions, setShowOptions] = useState<boolean>(false);
   const [busy, setBusy] = useState<boolean>(false);
+  const [productInfo, setProductInfo] = useState<Product>();
 
   const { authState } = useAuth();
   const { authClient } = useClient();
   const dispatch = useDispatch();
 
-  const { product } = route.params;
+  const { product, id } = route.params;
 
   const isOwner = authState.profile?.id === product?.seller.id;
 
@@ -71,6 +72,24 @@ const SingleProduct: FC<Props> = ({ route, navigation }) => {
     );
   };
 
+  const fetchProductInfo = async (productId: string) => {
+    const res = await runAxiosAsync<{ product: Product }>(
+      authClient.get(`/product/details/${id}`)
+    );
+
+    if (res) {
+      setProductInfo(res.product);
+    }
+  };
+
+  useEffect(() => {
+    if (id) {
+      fetchProductInfo(id);
+    }
+
+    if (product) setProductInfo(product);
+  }, [id, product]);
+
   return (
     <>
       <AppHeader
@@ -83,7 +102,7 @@ const SingleProduct: FC<Props> = ({ route, navigation }) => {
         }
       />
       <View style={styles.container}>
-        {product ? <ProductDetails product={product} /> : null}
+        {productInfo ? <ProductDetails product={productInfo} /> : null}
         <Pressable
           style={styles.chatButton}
           onPress={() => navigation.navigate("ChatWindow")}
