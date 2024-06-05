@@ -15,7 +15,7 @@ export type ProfileStackParamList = {
   Profile: undefined;
   Chats: undefined;
   Listings: undefined;
-  SingleProduct: { product?: Product };
+  SingleProduct: { product?: Product; id?: string };
   EditProduct: { product: Product };
   ChatWindow: undefined;
 };
