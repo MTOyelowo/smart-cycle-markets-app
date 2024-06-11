@@ -6,6 +6,7 @@ import Chats from "@views/Chats";
 import ProductsList from "@views/products/ProductsList";
 import SingleProduct from "@views/products/SingleProduct";
 import { Product } from "app/store/listings";
+import ChatWindow from "@views/chat/ChatWindow";
 
 interface Props {}
 
@@ -14,6 +15,10 @@ export type AppStackParamList = {
   Chats: undefined;
   ProductsList: { category: string };
   SingleProduct: { product?: Product; id?: string };
+  ChatWindow: {
+    conversationId: string;
+    peerProfile: { id: string; name: string; avatar?: string };
+  };
 };
 
 const Stack = createNativeStackNavigator<AppStackParamList>();
@@ -28,6 +33,7 @@ const AppNavigator: FC<Props> = (props) => {
       <Stack.Screen name="Chats" component={Chats} />
       <Stack.Screen name="ProductsList" component={ProductsList} />
       <Stack.Screen name="SingleProduct" component={SingleProduct} />
+      <Stack.Screen name="ChatWindow" component={ChatWindow} />
     </Stack.Navigator>
   );
 };

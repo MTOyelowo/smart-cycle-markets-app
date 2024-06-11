@@ -8,7 +8,14 @@ import { getAuthState, updateAuthState } from "app/store/auth";
 
 const authClient = axios.create({ baseURL })
 
-type Response = {
+export type TokenResponse = {
+    profile: {
+        id: string,
+        email: string,
+        name: string,
+        verified: boolean,
+        avatar?: string
+    },
     tokens: {
         refresh: string;
         access: string;
@@ -36,7 +43,7 @@ const useClient = () => {
 
         //send request with refresh token for new access token
         const options = { method: "POST", data: { refreshToken }, url: `${baseURL}/auth/refresh-token` }
-        const res = await runAxiosAsync<Response>(axios(options));
+        const res = await runAxiosAsync<TokenResponse>(axios(options));
         if (res?.tokens) {
             failedRequest.response.config.headers.Authorization = "Bearer " + res.tokens.access;
 
@@ -47,7 +54,7 @@ const useClient = () => {
 
             await asyncStorage.save(Keys.AUTH_TOKEN, res.tokens.access)
             await asyncStorage.save(Keys.REFRESH_TOKEN, res.tokens.refresh)
-            dispatch(updateAuthState({ profile: { ...authState.profile!, accessToken: res.tokens.access }, pending: false }))
+            dispatch(updateAuthState({ profile: { ...res.profile, accessToken: res.tokens.access }, pending: false }));
             return Promise.resolve();
         }
     }
