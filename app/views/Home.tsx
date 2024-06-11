@@ -11,57 +11,35 @@ import LatestProductsList, {
 } from "@components/LatestProductsList";
 import { runAxiosAsync } from "app/api/runAxiosAsync";
 import useClient from "app/hooks/useClient";
-
-const testData = [
-  {
-    id: "65943153939eb031a99e71e0",
-    name: "E-book Reader",
-    thumbnail:
-      "https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=2899&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    category: "Electronics",
-    price: 129.99,
-  },
-  {
-    id: "65943153939eb031a99e71df",
-    name: "Portable Speaker",
-    thumbnail:
-      "https://images.unsplash.com/photo-1524656855800-59465ebcec69?q=80&w=2938&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    category: "Electronics",
-    price: 49.99,
-  },
-  {
-    id: "65943153939eb031a99e71de",
-    name: "Wireless Mouse",
-    thumbnail:
-      "https://images.unsplash.com/photo-1572635196237-14b3f281503f?q=80&w=2960&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    category: "Electronics",
-    price: 29.99,
-  },
-  {
-    id: "65943153939eb031a99e71dd",
-    name: "Digital Camera",
-    thumbnail:
-      "https://images.unsplash.com/photo-1556306535-38febf6782e7?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    category: "Electronics",
-    price: 349.99,
-  },
-  {
-    id: "65943153939eb031a99e71e2",
-    name: "Laptop",
-    thumbnail:
-      "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    category: "Electronics",
-    price: 999.99,
-  },
-];
+import socket, { handleSocketConnection } from "app/socket";
+import useAuth from "app/hooks/useAuth";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  ActiveChat,
+  addNewActiveChats,
+  getUnreadChatCounts,
+} from "app/store/chats";
+import SearchModal from "@components/SearchModal";
 
 interface Props {}
+
+type LastChat = {
+  id: string;
+  lastMessage: string;
+  timestamp: Date;
+  unreadChatCounts: number;
+  peerProfile: { id: string; name: string; avatar?: string };
+};
 
 const Home: FC<Props> = (props) => {
   const { navigate } = useNavigation<NavigationProp<AppStackParamList>>();
   const { authClient } = useClient();
+  const { authState } = useAuth();
+  const dispatch = useDispatch();
+  const totalUnreadMessages = useSelector(getUnreadChatCounts);
 
   const [products, setProducts] = useState<LatestProduct[]>([]);
+  const [showSearchModal, setShowSearchModal] = useState(false);
 
   const fetchLatestProduct = async () => {
     const res = await runAxiosAsync<{ products: LatestProduct[] }>(
@@ -73,15 +51,37 @@ const Home: FC<Props> = (props) => {
     }
   };
 
+  const fetchLastChats = async () => {
+    const res = await runAxiosAsync<{ chats: ActiveChat[] }>(
+      authClient("/conversation/last-chats")
+    );
+
+    if (res) {
+      dispatch(addNewActiveChats(res.chats));
+    }
+  };
+
   useEffect(() => {
     fetchLatestProduct();
+    fetchLastChats();
+  }, []);
+
+  useEffect(() => {
+    if (authState.profile) handleSocketConnection(authState.profile, dispatch);
+
+    return () => {
+      socket.disconnect();
+    };
   }, []);
 
   return (
     <>
-      <ChatNotification onPress={() => navigate("Chats")} />
+      <ChatNotification
+        onPress={() => navigate("Chats")}
+        indicate={totalUnreadMessages > 0}
+      />
       <ScrollView style={styles.container}>
-        <SearchBar />
+        <SearchBar asButton onPress={() => setShowSearchModal(true)} />
         <CategoriesList
           onPress={(category) => navigate("ProductsList", { category })}
         />
@@ -90,6 +90,7 @@ const Home: FC<Props> = (props) => {
           onPress={(product) => navigate("SingleProduct", { id: product.id })}
         />
       </ScrollView>
+      <SearchModal visible={showSearchModal} onClose={setShowSearchModal} />
     </>
   );
 };

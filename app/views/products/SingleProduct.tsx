@@ -18,13 +18,15 @@ import { showMessage } from "react-native-flash-message";
 import LoadingSpinner from "@ui/LoadingSpinner";
 import { useDispatch } from "react-redux";
 import { Product, deleteItem } from "app/store/listings";
+import ChatIcon from "@components/ChatIcon";
 
 type Props = NativeStackScreenProps<ProfileStackParamList, "SingleProduct">;
 
 const SingleProduct: FC<Props> = ({ route, navigation }) => {
   const [showOptions, setShowOptions] = useState<boolean>(false);
-  const [busy, setBusy] = useState<boolean>(false);
   const [productInfo, setProductInfo] = useState<Product>();
+  const [busy, setBusy] = useState<boolean>(false);
+  const [loadingChat, setLoadingChat] = useState<boolean>(false);
 
   const { authState } = useAuth();
   const { authClient } = useClient();
@@ -32,7 +34,7 @@ const SingleProduct: FC<Props> = ({ route, navigation }) => {
 
   const { product, id } = route.params;
 
-  const isOwner = authState.profile?.id === product?.seller.id;
+  const isOwner = authState.profile?.id === productInfo?.seller.id;
 
   const menuOptions = [
     {
@@ -72,13 +74,28 @@ const SingleProduct: FC<Props> = ({ route, navigation }) => {
     );
   };
 
-  const fetchProductInfo = async (productId: string) => {
+  const fetchProductInfo = async (id: string) => {
     const res = await runAxiosAsync<{ product: Product }>(
       authClient.get(`/product/details/${id}`)
     );
 
     if (res) {
       setProductInfo(res.product);
+    }
+  };
+
+  const onChatButtonPress = async () => {
+    if (!productInfo) return;
+    setLoadingChat(true);
+    const res = await runAxiosAsync<{ conversationId: string }>(
+      authClient.get(`/conversation/with/${productInfo.seller.id}`)
+    );
+    setLoadingChat(false);
+    if (res) {
+      navigation.navigate("ChatWindow", {
+        conversationId: res.conversationId,
+        peerProfile: productInfo.seller,
+      });
     }
   };
 
@@ -103,12 +120,9 @@ const SingleProduct: FC<Props> = ({ route, navigation }) => {
       />
       <View style={styles.container}>
         {productInfo ? <ProductDetails product={productInfo} /> : null}
-        <Pressable
-          style={styles.chatButton}
-          onPress={() => navigation.navigate("ChatWindow")}
-        >
-          <AntDesign name="message1" size={20} color={colors.white} />
-        </Pressable>
+        {!isOwner ? (
+          <ChatIcon busy={loadingChat} onPress={onChatButtonPress} />
+        ) : null}
       </View>
       <OptionModal
         options={menuOptions}
